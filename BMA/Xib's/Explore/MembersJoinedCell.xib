@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Poppins-Regular.ttf">
+            <string>Poppins-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="MembersJoinedCell" id="KGk-i7-Jjw" customClass="MembersJoinedCell" customModule="BMA" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Cd-J7-Ppi">
+                        <rect key="frame" x="25" y="15" width="49" height="49"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Bee More Active logo" translatesAutoresizingMaskIntoConstraints="NO" id="3Uf-KC-diH">
+                                <rect key="frame" x="0.0" y="0.0" width="49" height="49"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="3Uf-KC-diH" firstAttribute="leading" secondItem="6Cd-J7-Ppi" secondAttribute="leading" id="0Jj-Yb-fHU"/>
+                            <constraint firstAttribute="trailing" secondItem="3Uf-KC-diH" secondAttribute="trailing" id="1go-ij-K18"/>
+                            <constraint firstItem="3Uf-KC-diH" firstAttribute="top" secondItem="6Cd-J7-Ppi" secondAttribute="top" id="VOr-Ms-HzZ"/>
+                            <constraint firstAttribute="bottom" secondItem="3Uf-KC-diH" secondAttribute="bottom" id="a29-Co-PGu"/>
+                            <constraint firstAttribute="height" constant="49" id="irI-DZ-kb1"/>
+                            <constraint firstAttribute="width" constant="49" id="tyh-oh-q7Y"/>
+                        </constraints>
+                    </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vfn-Nd-DMf">
+                        <rect key="frame" x="84" y="15" width="72" height="22.5"/>
+                        <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="16"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iak-rG-nAD" customClass="sainiCardView" customModule="SainiUtils">
+                        <rect key="frame" x="170" y="14" width="76" height="25"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Creator" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gBW-hU-hds">
+                                <rect key="frame" x="15" y="4" width="46.5" height="17"/>
+                                <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="12"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="25" id="5ZD-Kb-YCK"/>
+                            <constraint firstAttribute="width" constant="76" id="cTs-11-WtG"/>
+                            <constraint firstItem="gBW-hU-hds" firstAttribute="centerX" secondItem="iak-rG-nAD" secondAttribute="centerX" id="u6s-ce-TxD"/>
+                            <constraint firstItem="gBW-hU-hds" firstAttribute="centerY" secondItem="iak-rG-nAD" secondAttribute="centerY" id="v5z-9V-cO3"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadious">
+                                <real key="value" value="12"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="color" keyPath="shadowColor">
+                                <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="example@mail.com" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CeR-TD-i27">
+                        <rect key="frame" x="84" y="39.5" width="221" height="20"/>
+                        <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="14"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="sRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UVl-Ux-T5o">
+                        <rect key="frame" x="0.0" y="79" width="320" height="1"/>
+                        <color key="backgroundColor" red="0.4392156862745098" green="0.4392156862745098" blue="0.4392156862745098" alpha="0.13" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="1" id="249-Qc-5Ya"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="vfn-Nd-DMf" firstAttribute="top" secondItem="3Uf-KC-diH" secondAttribute="top" id="0bK-a5-b3T"/>
+                    <constraint firstItem="vfn-Nd-DMf" firstAttribute="leading" secondItem="6Cd-J7-Ppi" secondAttribute="trailing" constant="10" id="4nM-uO-NPp"/>
+                    <constraint firstAttribute="trailing" secondItem="UVl-Ux-T5o" secondAttribute="trailing" id="5Sk-ZF-tUO"/>
+                    <constraint firstAttribute="trailing" secondItem="CeR-TD-i27" secondAttribute="trailing" constant="15" id="9WJ-Ah-eWY"/>
+                    <constraint firstItem="CeR-TD-i27" firstAttribute="top" secondItem="vfn-Nd-DMf" secondAttribute="bottom" constant="2" id="Cb3-xL-K2N"/>
+                    <constraint firstItem="6Cd-J7-Ppi" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="25" id="EF1-oX-2sP"/>
+                    <constraint firstAttribute="bottom" secondItem="UVl-Ux-T5o" secondAttribute="bottom" id="HpR-qZ-CLJ"/>
+                    <constraint firstItem="iak-rG-nAD" firstAttribute="centerY" secondItem="vfn-Nd-DMf" secondAttribute="centerY" id="VYJ-Y2-6Be"/>
+                    <constraint firstItem="CeR-TD-i27" firstAttribute="leading" secondItem="vfn-Nd-DMf" secondAttribute="leading" id="W6k-af-Y1M"/>
+                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="iak-rG-nAD" secondAttribute="trailing" constant="15" id="Yyr-vU-gkx"/>
+                    <constraint firstItem="iak-rG-nAD" firstAttribute="leading" secondItem="vfn-Nd-DMf" secondAttribute="trailing" constant="14" id="fHT-aA-tzR"/>
+                    <constraint firstItem="UVl-Ux-T5o" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="mvz-1X-L3b"/>
+                    <constraint firstItem="6Cd-J7-Ppi" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="15" id="zC0-ew-vCV"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="createrView" destination="iak-rG-nAD" id="uDc-jC-MEx"/>
+                <outlet property="emailLbl" destination="CeR-TD-i27" id="MV0-pQ-YNF"/>
+                <outlet property="nameLbl" destination="vfn-Nd-DMf" id="fHP-Zc-g1R"/>
+                <outlet property="profileImage" destination="3Uf-KC-diH" id="fkJ-TY-gRG"/>
+            </connections>
+            <point key="canvasLocation" x="87" y="71"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="Bee More Active logo" width="271" height="198"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb937292540183034</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.983504886584-f9m2fc1lgkd3ls2a1qrlgv0m13rhbjl5</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FacebookAppID</key>
+	<string>937292540183034</string>
+	<key>FacebookClientToken</key>
+	<string>55788f60da3cb60c03c4bc7e212111e3</string>
+	<key>FacebookDisplayName</key>
+	<string>BeeMoreActive</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fbapi20130214</string>
+		<string>fbapi20130410</string>
+		<string>fbapi20130702</string>
+		<string>fbapi20131010</string>
+		<string>fbapi20131219</string>
+		<string>fbapi20140410</string>
+		<string>fbapi20140116</string>
+		<string>fbapi20150313</string>
+		<string>fbapi20150629</string>
+		<string>fbapi20160328</string>
+		<string>fbauth</string>
+		<string>fb-messenger-share-api</string>
+		<string>fbauth2</string>
+		<string>fbshareextension</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>BMA wants to use your calendar to show events.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need to access your camera to update images.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>We need to access your contacts to connect you with your friends.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need to access your location to show your nearby events/leagues</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need to access your location to show your nearby events/leagues</string>
+	<key>NSLocationUsageDescription</key>
+	<string>We need to access your location to show your nearby events/leagues</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need to access your location to show your nearby events/leagues</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need to access your gallery to update images.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Poppins-ExtraLight</string>
+		<string>Poppins-ThinItalic</string>
+		<string>Poppins-ExtraLightItalic</string>
+		<string>Poppins-BoldItalic</string>
+		<string>Poppins-Light</string>
+		<string>Poppins-Medium</string>
+		<string>Poppins-SemiBoldItalic</string>
+		<string>Poppins-ExtraBoldItalic</string>
+		<string>Poppins-ExtraBold</string>
+		<string>Poppins-BlackItalic</string>
+		<string>Poppins-Regular</string>
+		<string>Poppins-LightItalic</string>
+		<string>Poppins-Bold</string>
+		<string>Poppins-Black</string>
+		<string>Poppins-Thin</string>
+		<string>Poppins-SemiBold</string>
+		<string>Poppins-Italic</string>
+		<string>Poppins-MediumItalic</string>
+	</array>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
+</dict>
+</plist>

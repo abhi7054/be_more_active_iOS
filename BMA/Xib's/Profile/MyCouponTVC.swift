@@ -1,0 +1,27 @@
+//
+//  MyCouponTVC.swift
+//  BMA
+//
+//  Created by iMac on 02/07/21.
+//
+
+import UIKit
+
+class MyCouponTVC: UITableViewCell {
+
+    @IBOutlet weak var discountCouponLbl: UILabel!
+    @IBOutlet weak var descriptionLbl: UILabel!
+    
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+        
+    }
+    
+}

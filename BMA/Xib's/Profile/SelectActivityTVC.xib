@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" restorationIdentifier="SelectActivityTVC" selectionStyle="none" indentationWidth="10" reuseIdentifier="SelectActivityTVC" rowHeight="42" id="KGk-i7-Jjw" customClass="SelectActivityTVC" customModule="BMA" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="42"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="42"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dut-eh-I1b">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="42"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0sS-te-WA2">
+                                <rect key="frame" x="20" y="0.0" width="187" height="42"/>
+                                <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="16"/>
+                                <inset key="titleEdgeInsets" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <state key="normal" title="Volleyball players" image="ic_checkbox">
+                                    <color key="titleColor" systemColor="darkTextColor"/>
+                                </state>
+                                <state key="selected" image="ic_checked"/>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" name="#FCFCFC"/>
+                        <constraints>
+                            <constraint firstItem="0sS-te-WA2" firstAttribute="top" secondItem="dut-eh-I1b" secondAttribute="top" id="3Jp-O5-Ej4"/>
+                            <constraint firstAttribute="trailing" secondItem="0sS-te-WA2" secondAttribute="trailing" constant="113" id="UaC-hm-t66"/>
+                            <constraint firstAttribute="height" constant="42" id="dj8-xa-wkI"/>
+                            <constraint firstAttribute="bottom" secondItem="0sS-te-WA2" secondAttribute="bottom" id="dzT-U1-M3o"/>
+                            <constraint firstItem="0sS-te-WA2" firstAttribute="leading" secondItem="dut-eh-I1b" secondAttribute="leading" constant="20" id="vr5-ny-jPd"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="dut-eh-I1b" secondAttribute="trailing" id="AnN-dW-aph"/>
+                    <constraint firstItem="dut-eh-I1b" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="Jsz-GC-Swb"/>
+                    <constraint firstAttribute="bottom" secondItem="dut-eh-I1b" secondAttribute="bottom" id="RT2-zn-NYr"/>
+                    <constraint firstItem="dut-eh-I1b" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="mo1-SV-N4x"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="statusBtn" destination="0sS-te-WA2" id="hFS-Tf-esZ"/>
+            </connections>
+            <point key="canvasLocation" x="137.68115942028987" y="152.00892857142856"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="ic_checkbox" width="24" height="24"/>
+        <image name="ic_checked" width="24" height="24"/>
+        <namedColor name="#FCFCFC">
+            <color red="0.98799997568130493" green="0.98799997568130493" blue="0.98799997568130493" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="darkTextColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

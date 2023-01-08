@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Poppins-Bold.ttf">
+            <string>Poppins-Bold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="SubscriptionHeaderCVC" id="gTV-IL-0wX" customClass="SubscriptionHeaderCVC" customModule="BMA" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="132" height="32"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="132" height="32"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yYz-dx-8Ss">
+                        <rect key="frame" x="0.0" y="0.0" width="132" height="32"/>
+                        <fontDescription key="fontDescription" name="Poppins-Bold" family="Poppins" pointSize="20"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="isz-EC-PKb" customClass="sainiCardView" customModule="SainiUtils">
+                        <rect key="frame" x="120" y="0.0" width="12" height="12"/>
+                        <color key="backgroundColor" name="AccentColor"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="12" id="6Sd-19-0o5"/>
+                            <constraint firstAttribute="width" constant="12" id="s0J-k7-8l2"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadious">
+                                <real key="value" value="6"/>
+                            </userDefinedRuntimeAttribute>
+                            <userDefinedRuntimeAttribute type="color" keyPath="shadowColor">
+                                <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                </subviews>
+            </view>
+            <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="yYz-dx-8Ss" secondAttribute="bottom" id="4Pu-nm-XaK"/>
+                <constraint firstItem="isz-EC-PKb" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="VeI-Fw-Bno"/>
+                <constraint firstItem="yYz-dx-8Ss" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Yft-Ie-xA3"/>
+                <constraint firstAttribute="trailing" secondItem="isz-EC-PKb" secondAttribute="trailing" id="gvf-zz-McC"/>
+                <constraint firstItem="yYz-dx-8Ss" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="hOm-Ls-4as"/>
+                <constraint firstAttribute="trailing" secondItem="yYz-dx-8Ss" secondAttribute="trailing" id="ibv-5a-5Sj"/>
+                <constraint firstItem="yYz-dx-8Ss" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="sgJ-lG-99w"/>
+            </constraints>
+            <size key="customSize" width="132" height="52"/>
+            <connections>
+                <outlet property="headingLbl" destination="yYz-dx-8Ss" id="Rdh-i2-g1m"/>
+                <outlet property="selectedDotView" destination="isz-EC-PKb" id="5gc-eR-ShR"/>
+            </connections>
+            <point key="canvasLocation" x="52.173913043478265" y="76.339285714285708"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <namedColor name="AccentColor">
+            <color red="0.99199998378753662" green="0.74500000476837158" blue="0.059000000357627869" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>
