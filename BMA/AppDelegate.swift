@@ -13,7 +13,7 @@ import IQKeyboardManagerSwift
 import Firebase
 import GoogleSignIn
 import GoogleMaps
-import FBSDKCoreKit
+//import FBSDKCoreKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -34,10 +34,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //Firebase
         FirebaseApp.configure()
         // for facebookLogin
-        ApplicationDelegate.shared.application(
-            application,
-            didFinishLaunchingWithOptions: launchOptions
-        )
+//        ApplicationDelegate.shared.application(
+//            application,
+//            didFinishLaunchingWithOptions: launchOptions
+//        )
         
         //Google
         GIDSignIn.sharedInstance().clientID = GOOGLE.CLIENT_ID.rawValue

@@ -11,7 +11,7 @@ import Foundation
 struct EventListResponse: Codable {
     let hasMore: Bool
     let format: String
-    let data: [EventList]
+    let data: [EventList]?
     let code: Int
     let message: String
     let limit, size, page: Int

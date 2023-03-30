@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import FBSDKLoginKit
+//import FBSDKLoginKit
 import GoogleSignIn
 import SainiUtils
 import AuthenticationServices
@@ -18,7 +18,7 @@ import AuthenticationServices
 
 class SocialLogin: UIViewController, GIDSignInDelegate {
     
-    let fbLoginManager = LoginManager()
+//    let fbLoginManager = LoginManager()
     private var SocialLoginVM: SocialLoginViewModel = SocialLoginViewModel()
     var isFromLogin : Bool = Bool()
     
@@ -30,63 +30,63 @@ class SocialLogin: UIViewController, GIDSignInDelegate {
     }
     
     //MARK: - Facebook Login
-    func loginWithFacebook() {
-        fbLoginManager.logOut()
-        fbLoginManager.logIn(permissions: ["public_profile", "email"], from: AppDelegate().sharedDelegate().window?.rootViewController) { (result, error) in
-            if error != nil {
-                return
-            }
-            guard let token = result?.token else {
-                return
-            }
-            
-            let accessToken : String = token.tokenString as String
-            
-            if accessToken == "" {
-                return
-            }
-            
-            let request : GraphRequest = GraphRequest(graphPath: "me", parameters: ["fields" : "picture.width(500).height(500), email, id, name, first_name, last_name, gender"])
-            
-            let connection : GraphRequestConnection = GraphRequestConnection()
-            connection.add(request) { (connection, result, error) in
-                
-                if result != nil
-                {
-                    let dict = result as! [String : AnyObject]
-                    log.info("\(dict)")/
-                    
-                    guard let userId = dict["id"] as? String else { return }
-                    
-                    var emailId = ""
-                    if let email = dict["email"]
-                    {
-                        emailId = email as! String
-                    }
-                    
-                    var name = ""
-                    if let temp = dict["name"] as? String {
-                        name = temp
-                    }
-                    var imgUrl = ""
-                    if let picture = dict["picture"] as? [String : Any]
-                    {
-                        if let data = picture["data"] as? [String : Any]
-                        {
-                            if let url = data["url"]
-                            {
-                                imgUrl = url as! String
-                            }
-                        }
-                    }
-                    let socialRequest = SocialLoginRequest(socialId: userId, socialToken: accessToken, socialIdentifier: SocialType.facebook.rawValue, email: emailId, picture: imgUrl, device: "iOS", fcmToken: getPushToken(), name: name)
-                    log.info("PARAMS: \(Log.stats()) \(socialRequest)")/
-                    self.SocialLoginVM.SocialLogin(request: socialRequest)
-                }
-            }
-            connection.start()
-        }
-    }
+//    func loginWithFacebook() {
+//        fbLoginManager.logOut()
+//        fbLoginManager.logIn(permissions: ["public_profile", "email"], from: AppDelegate().sharedDelegate().window?.rootViewController) { (result, error) in
+//            if error != nil {
+//                return
+//            }
+//            guard let token = result?.token else {
+//                return
+//            }
+//
+//            let accessToken : String = token.tokenString as String
+//
+//            if accessToken == "" {
+//                return
+//            }
+//
+//            let request : GraphRequest = GraphRequest(graphPath: "me", parameters: ["fields" : "picture.width(500).height(500), email, id, name, first_name, last_name, gender"])
+//
+//            let connection : GraphRequestConnection = GraphRequestConnection()
+//            connection.add(request) { (connection, result, error) in
+//
+//                if result != nil
+//                {
+//                    let dict = result as! [String : AnyObject]
+//                    log.info("\(dict)")/
+//
+//                    guard let userId = dict["id"] as? String else { return }
+//
+//                    var emailId = ""
+//                    if let email = dict["email"]
+//                    {
+//                        emailId = email as! String
+//                    }
+//
+//                    var name = ""
+//                    if let temp = dict["name"] as? String {
+//                        name = temp
+//                    }
+//                    var imgUrl = ""
+//                    if let picture = dict["picture"] as? [String : Any]
+//                    {
+//                        if let data = picture["data"] as? [String : Any]
+//                        {
+//                            if let url = data["url"]
+//                            {
+//                                imgUrl = url as! String
+//                            }
+//                        }
+//                    }
+//                    let socialRequest = SocialLoginRequest(socialId: userId, socialToken: accessToken, socialIdentifier: SocialType.facebook.rawValue, email: emailId, picture: imgUrl, device: "iOS", fcmToken: getPushToken(), name: name)
+//                    log.info("PARAMS: \(Log.stats()) \(socialRequest)")/
+//                    self.SocialLoginVM.SocialLogin(request: socialRequest)
+//                }
+//            }
+//            connection.start()
+//        }
+//    }
     
     //MARK: - GoogleLogin
     

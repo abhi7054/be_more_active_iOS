@@ -27,7 +27,7 @@ class CalendarListVC: UIViewController {
             style.headerScroll.isAnimateTitleDate = true
             style.headerScroll.heightHeaderWeek = 70
             style.event.isEnableVisualSelect = false
-            style.month.isHiddenTitle = true
+            style.month.isHiddenEventTitle = true
             style.month.weekDayAlignment = .center
         } else {
             style.timeline.widthEventViewer = 350
@@ -171,7 +171,7 @@ extension CalendarListVC : CalendarDelegate, CalendarDataSource {
         event.color = Event.Color(UIColor.black.withAlphaComponent(1))
         event.isAllDay = false
         event.isContainsFile = false
-        event.text = dict.name + ": Created \n" + dict.location.address
+        event.title = TextEvent(timeline: dict.name + ": Created \n" + dict.location.address)
         event.textColor = .white
         event.recurringType = .none
         return event
@@ -187,7 +187,7 @@ extension CalendarListVC : CalendarDelegate, CalendarDataSource {
         event.color = Event.Color(AppColors.themeColor)
         event.isAllDay = false
         event.isContainsFile = false
-        event.text = dict.name + ": Booked\n" + dict.location.address
+        event.title =  TextEvent(timeline: dict.name + ": Booked\n" + dict.location.address)
         event.textColor = .black
         event.recurringType = .none
         return event

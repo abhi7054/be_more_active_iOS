@@ -5,6 +5,8 @@
 //  Created by Sergei Kviatkovskii on 14.12.2020.
 //
 
+#if os(iOS)
+
 import UIKit
 import EventKit
 
@@ -13,12 +15,10 @@ extension CalendarView {
     
     /// **DEPRECATED**
     @available(*, deprecated, renamed: "CalendarDataSource.willDisplayEventViewer")
-    public func addEventViewToDay(view: UIView) {
-        
-    }
+    public func addEventViewToDay(view: UIView) {}
     
     public func set(type: CalendarType, date: Date? = nil) {
-        self.type = type
+        parameters.type = type
         switchTypeCalendar(type: type)
         
         if let dt = date {
@@ -27,34 +27,58 @@ extension CalendarView {
     }
     
     public func reloadData() {
-        if !style.systemCalendars.isEmpty {
-            authForSystemCalendars()
+        
+        func reload(systemEvents: [EKEvent] = []) {
+            let events = dataSource?.eventsForCalendar(systemEvents: systemEvents) ?? []
+            
+            switch parameters.type {
+            case .day:
+                dayView.reloadData(events)
+            case .week:
+                weekView.reloadData(events)
+            case .month:
+                monthView.reloadData(events)
+            case .list:
+                listView.reloadData(events)
+            default:
+                break
+            }
         }
         
-        let events = dataSource?.eventsForCalendar(systemEvents: systemEvents) ?? []
-        
-        switch type {
-        case .day:
-            dayView.reloadData(events)
-        case .week:
-            weekView.reloadData(events)
-        case .month:
-            monthView.reloadData(events)
-        case .list:
-            listView.reloadData(events)
-        default:
-            break
+        if !style.systemCalendars.isEmpty {
+            requestAccessSystemCalendars(style.systemCalendars, store: eventStore) { [weak self] (result) in
+                guard let self = self else {
+                    DispatchQueue.main.async {
+                        reload()
+                    }
+                    return
+                }
+                
+                if result {
+                    self.getSystemEvents(store: self.eventStore, calendars: self.style.systemCalendars) { (systemEvents) in
+                        DispatchQueue.main.async {
+                            reload(systemEvents: systemEvents)
+                        }
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        reload()
+                    }
+                }
+            }
+        } else {
+            reload()
         }
     }
     
-    public func scrollTo(_ date: Date) {
-        switch type {
+    public func scrollTo(_ date: Date, animated: Bool? = nil) {
+        switch parameters.type {
         case .day:
             dayView.setDate(date)
         case .week:
             weekView.setDate(date)
         case .month:
-            monthView.setDate(date)
+            monthView.setDate(date, animated: animated)
         case .year:
             yearView.setDate(date)
         case .list:
@@ -63,11 +87,11 @@ extension CalendarView {
     }
     
     public func deselectEvent(_ event: Event, animated: Bool) {
-        switch type {
+        switch parameters.type {
         case .day:
-            dayView.timelinePages.timelineView?.deselectEvent(event, animated: animated)
+            dayView.timelinePage.timelineView?.deselectEvent(event, animated: animated)
         case .week:
-            weekView.timelinePages.timelineView?.deselectEvent(event, animated: animated)
+            weekView.timelinePage.timelineView?.deselectEvent(event, animated: animated)
         default:
             break
         }
@@ -93,54 +117,82 @@ extension CalendarView {
         }
     }
     
-    // MARK: Private methods
-    
-    func getSystemEvents(eventStore: EKEventStore, calendars: [EKCalendar]) -> [EKEvent] {
-        var startOffset = 0
-        if calendarData.yearsCount.count > 1 {
-            startOffset = calendarData.yearsCount.first ?? 0
-        }
-        var endOffset = 1
-        if calendarData.yearsCount.count > 1 {
-            endOffset = calendarData.yearsCount.last ?? 1
-        }
-        
-        guard let startDate = style.calendar.date(byAdding: .year, value: startOffset, to: calendarData.date),
-              let endDate = style.calendar.date(byAdding: .year, value: endOffset, to: calendarData.date) else {
-            return []
-        }
-        
-        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: calendars)
-        return eventStore.events(matching: predicate)
-    }
-    
-    private func authForSystemCalendars() {
-        let status = EKEventStore.authorizationStatus(for: .event)
-        
-        switch (status) {
-        case .notDetermined:
-            requestAccessToSystemCalendar { (_) in
-                DispatchQueue.main.async { [weak self] in
-                    self?.reloadData()
-                }
-            }
+    public func showSkeletonLoading(_ visible: Bool) {
+        switch parameters.type {
+        case .month:
+            monthView.showSkeletonVisible(visible)
+        case .list:
+            listView.showSkeletonVisible(visible)
         default:
             break
         }
     }
     
-    private func requestAccessToSystemCalendar(completion: @escaping (Bool) -> Void) {
-        eventStore.requestAccess(to: .event) { [weak self] (access, error) in
-            print("System calendars = \(self?.style.systemCalendars ?? []) - access = \(access), error = \(error?.localizedDescription ?? "nil")")
+    // MARK: Private methods
+    
+    private var calendarQueue: DispatchQueue {
+        DispatchQueue(label: "kvk.calendar.com", qos: .default, attributes: .concurrent)
+    }
+    
+    private func getSystemEvents(store: EKEventStore, calendars: Set<String>, completion: @escaping ([EKEvent]) -> Void) {
+        guard !calendars.isEmpty else {
+            completion([])
+            return
+        }
+        
+        let systemCalendars = store.calendars(for: .event).filter({ calendars.contains($0.title) })
+        guard !systemCalendars.isEmpty else {
+            completion([])
+            return
+        }
+        
+        calendarQueue.async { [weak self] in
+            guard let self = self else {
+                completion([])
+                return
+            }
+            
+            var startOffset = 0
+            var endOffset = 1
+            if self.calendarData.yearsCount.count > 1 {
+                startOffset = self.calendarData.yearsCount.first ?? 0
+                endOffset = self.calendarData.yearsCount.last ?? 1
+            }
+            
+            guard let startDate = self.style.calendar.date(byAdding: .year,
+                                                           value: startOffset,
+                                                           to: self.calendarData.date),
+                  let endDate = self.style.calendar.date(byAdding: .year,
+                                                         value: endOffset,
+                                                         to: self.calendarData.date) else {
+                        completion([])
+                      return
+                  }
+            
+            let predicate = store.predicateForEvents(withStart: startDate,
+                                                     end: endDate,
+                                                     calendars: systemCalendars)
+            let items = store.events(matching: predicate)
+            completion(items)
+        }
+    }
+    
+    private func requestAccessSystemCalendars(_ calendars: Set<String>,
+                                              store: EKEventStore,
+                                              completion: @escaping (Bool) -> Void) {
+        let status = EKEventStore.authorizationStatus(for: .event)
+        
+        store.requestAccess(to: .event) { (access, error) in
+            print("System calendars = \(calendars) - access = \(access), error = \(error?.localizedDescription ?? "nil"), status = \(status.rawValue)")
             completion(access)
         }
     }
     
     private func switchTypeCalendar(type: CalendarType) {
-        self.type = type
+        parameters.type = type
         currentViewCache?.removeFromSuperview()
         
-        switch self.type {
+        switch parameters.type {
         case .day:
             addSubview(dayView)
             currentViewCache = dayView
@@ -159,7 +211,7 @@ extension CalendarView {
             reloadData()
         }
         
-        if let cacheView = currentViewCache as? CalendarSettingProtocol, cacheView.currentStyle != style {
+        if let cacheView = currentViewCache as? CalendarSettingProtocol, cacheView.style != style {
             cacheView.updateStyle(style)
         }
     }
@@ -167,27 +219,41 @@ extension CalendarView {
 
 extension CalendarView: DisplayDataSource {
     public func dequeueCell<T>(dateParameter: DateParameter, type: CalendarType, view: T, indexPath: IndexPath) -> KVKCalendarCellProtocol? where T : UIScrollView {
-        return dataSource?.dequeueCell(dateParameter: dateParameter, type: type, view: view, indexPath: indexPath)
+        dataSource?.dequeueCell(dateParameter: dateParameter, type: type, view: view, indexPath: indexPath)
     }
     
     public func dequeueHeader<T>(date: Date?, type: CalendarType, view: T, indexPath: IndexPath) -> KVKCalendarHeaderProtocol? where T : UIScrollView {
-        return dataSource?.dequeueHeader(date: date, type: type, view: view, indexPath: indexPath)
+        dataSource?.dequeueHeader(date: date, type: type, view: view, indexPath: indexPath)
     }
     
     public func willDisplayCollectionView(frame: CGRect, type: CalendarType) -> UICollectionView? {
-        return dataSource?.willDisplayCollectionView(frame: frame, type: type)
+        dataSource?.willDisplayCollectionView(frame: frame, type: type)
     }
     
     public func willDisplayEventView(_ event: Event, frame: CGRect, date: Date?) -> EventViewGeneral? {
-        return dataSource?.willDisplayEventView(event, frame: frame, date: date)
+        dataSource?.willDisplayEventView(event, frame: frame, date: date)
     }
 
     public func willDisplayHeaderSubview(date: Date?, frame: CGRect, type: CalendarType) -> UIView? {
-        return dataSource?.willDisplayHeaderSubview(date: date, frame: frame, type: type)
+        dataSource?.willDisplayHeaderSubview(date: date, frame: frame, type: type)
+    }
+    
+    /// **Temporary disabled**
+    private func willDisplayHeaderView(date: Date?, frame: CGRect, type: CalendarType) -> UIView? {
+        dataSource?.willDisplayHeaderView(date: date, frame: frame, type: type)
     }
     
     public func willDisplayEventViewer(date: Date, frame: CGRect) -> UIView? {
-        return dataSource?.willDisplayEventViewer(date: date, frame: frame)
+        dataSource?.willDisplayEventViewer(date: date, frame: frame)
+    }
+    
+    @available(iOS 14.0, *)
+    public func willDisplayEventOptionMenu(_ event: Event, type: CalendarType) -> (menu: UIMenu, customButton: UIButton?)? {
+        dataSource?.willDisplayEventOptionMenu(event, type: type)
+    }
+    
+    public func dequeueMonthViewEvents(_ events: [Event], date: Date, frame: CGRect) -> UIView? {
+        dataSource?.dequeueMonthViewEvents(events, date: date, frame: frame)
     }
 }
 
@@ -201,7 +267,7 @@ extension CalendarView: DisplayDelegate {
     }
     
     func didDisplayEvents(_ events: [Event], dates: [Date?], type: CalendarType) {
-        guard self.type == type else { return }
+        guard parameters.type == type else { return }
         
         delegate?.didDisplayEvents(events, dates: dates)
     }
@@ -238,8 +304,8 @@ extension CalendarView: DisplayDelegate {
 }
 
 extension CalendarView: CalendarSettingProtocol {
-    var currentStyle: Style {
-        return style
+    var style: Style {
+        parameters.style
     }
     
     public func reloadFrame(_ frame: CGRect) {
@@ -251,7 +317,7 @@ extension CalendarView: CalendarSettingProtocol {
     }
     
     public func updateStyle(_ style: Style) {
-        self.style = style.checkStyle
+        parameters.style = style.checkStyle
         
         if let currentView = currentViewCache as? CalendarSettingProtocol {
             currentView.updateStyle(self.style)
@@ -262,3 +328,5 @@ extension CalendarView: CalendarSettingProtocol {
         
     }
 }
+
+#endif

@@ -5,10 +5,18 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import UIKit
 import EventKit
 
 public final class CalendarView: UIView {
+    
+    struct Parameters {
+        var type = CalendarType.day
+        var style: Style
+    }
+    
     public weak var delegate: CalendarDelegate?
     public weak var dataSource: CalendarDataSource? {
         didSet {
@@ -16,27 +24,17 @@ public final class CalendarView: UIView {
         }
     }
     public var selectedType: CalendarType {
-        return type
+        parameters.type
     }
     
     let eventStore = EKEventStore()
-    var type = CalendarType.day
-    var style: Style
+    var parameters: Parameters
     
     private(set) var calendarData: CalendarData
     private var weekData: WeekData
     private let monthData: MonthData
     private var dayData: DayData
     private let listData: ListViewData
-    
-    var systemEvents: [EKEvent] {
-        guard !style.systemCalendars.isEmpty else { return [] }
-
-        let systemCalendars = eventStore.calendars(for: .event).filter({ style.systemCalendars.contains($0.title) })
-        guard !systemCalendars.isEmpty else { return [] }
-        
-        return getSystemEvents(eventStore: eventStore, calendars: systemCalendars)
-    }
     
     /// references the current visible View (to allow lazy loading of views)
     // cannot be private unfortunately, because private only allows access to extensions that are in the same file...
@@ -51,7 +49,7 @@ public final class CalendarView: UIView {
     }()
     
     private(set) lazy var weekView: WeekView = {
-        let week = WeekView(data: weekData, frame: frame, style: style)
+        let week = WeekView(parameters: .init(data: weekData, style: style), frame: frame)
         week.delegate = self
         week.dataSource = self
         week.scrollHeaderDay.dataSource = self
@@ -59,7 +57,7 @@ public final class CalendarView: UIView {
     }()
     
     private(set) lazy var monthView: MonthView = {
-        let month = MonthView(data: monthData, frame: frame, style: style)
+        let month = MonthView(parameters: .init(monthData: monthData, style: style), frame: frame)
         month.delegate = self
         month.dataSource = self
         month.willSelectDate = { [weak self] (date) in
@@ -81,23 +79,30 @@ public final class CalendarView: UIView {
         return list
     }()
     
-    public init(frame: CGRect, date: Date = Date(), style: Style = Style(), years: Int = 4) {
-        self.style = style.checkStyle
-        self.calendarData = CalendarData(date: date, years: years, style: style)
+    public init(frame: CGRect, date: Date? = nil, style: Style = Style(), years: Int = 4) {
+        self.parameters = .init(type: style.defaultType ?? .day, style: style.checkStyle)
+        self.calendarData = CalendarData(date: date ?? Date(), years: years, style: style)
         self.dayData = DayData(data: calendarData, startDay: style.startWeekDay)
-        self.weekData = WeekData(data: calendarData, startDay: style.startWeekDay)
-        self.monthData = MonthData(parameters: .init(data: calendarData, startDay: style.startWeekDay, calendar: style.calendar, monthStyle: style.month))
+        self.weekData = WeekData(data: calendarData,
+                                 startDay: style.startWeekDay,
+                                 maxDays: style.week.maxDays)
+        self.monthData = MonthData(parameters: .init(data: calendarData,
+                                                     startDay: style.startWeekDay,
+                                                     calendar: style.calendar,
+                                                     style: style))
         self.listData = ListViewData(data: calendarData)
         super.init(frame: frame)
         
         if let defaultType = style.defaultType {
-            type = defaultType
+            parameters.type = defaultType
         }
         
-        set(type: type, date: date)
+        set(type: parameters.type, date: date)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
+
+#endif

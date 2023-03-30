@@ -1,6 +1,6 @@
 # Uncomment the next line to define a global platform for your project
 # platform :ios, '9.0'
-
+platform :ios, '11.0'
 target 'BMA' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
@@ -14,9 +14,7 @@ target 'BMA' do
   pod 'FSCalendar'
   pod 'Alamofire', '~> 5.4'
   pod 'RangeSeekSlider'
-  
-  pod 'GoogleSignIn'
-  pod 'FBSDKLoginKit'
+  pod 'GoogleSignIn', '~> 5.0.2'
   pod 'Socket.IO-Client-Swift', '~> 15.2.0'
   pod 'GooglePlaces'
   pod 'GoogleMaps', '~> 3.7.0'
@@ -27,6 +25,6 @@ target 'BMA' do
   pod 'Firebase/Crashlytics'
   
   pod 'Lightbox'
-  pod 'KVKCalendar'
+  pod 'KVKCalendar', '~> 0.5.7'
   
 end

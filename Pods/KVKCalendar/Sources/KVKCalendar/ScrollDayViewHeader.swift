@@ -5,6 +5,8 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import UIKit
 
 final class ScrollDayHeaderView: UIView {
@@ -15,7 +17,7 @@ final class ScrollDayHeaderView: UIView {
     
     struct Parameters {
         let frame: CGRect
-        let days: [Day]
+        var days: [Day]
         var date: Date
         let type: CalendarType
         var style: Style
@@ -23,36 +25,43 @@ final class ScrollDayHeaderView: UIView {
     
     private var params: Parameters
     private var collectionView: UICollectionView!
-    private var isAnimate: Bool = false
+    private var isAnimate = false
     private var lastContentOffset: CGFloat = 0
     private var trackingTranslation: CGFloat?
     private var subviewCustomHeader: UIView?
     
-    private var style: Style {
-        get {
-            return params.style
-        }
-        set {
-            params.style = newValue
-        }
-    }
     private var days: [Day] {
-        return params.days
+        params.days
     }
     private var calendar: Calendar {
-        return params.style.calendar
+        params.style.calendar
     }
     private var type: CalendarType {
-        return params.type
+        params.type
     }
+    
+    private var isUsedCustomHeaderView = false
     
     var date: Date {
         get {
-            return params.date
+            params.date
         }
         set {
             params.date = newValue
         }
+    }
+    
+    private var maxDays: Int {
+        switch type {
+        case .week:
+            return style.week.maxDays
+        default:
+            return 7
+        }
+    }
+    
+    private var isFullyWeek: Bool {
+        maxDays == 7
     }
     
     weak var dataSource: DisplayDataSource?
@@ -76,9 +85,15 @@ final class ScrollDayHeaderView: UIView {
     private var subviewFrameForDevice: CGRect {
         switch UIDevice.current.userInterfaceIdiom {
         case .phone:
-            return CGRect(x: 10, y: frame.height - style.headerScroll.heightSubviewHeader - 5, width: frame.width - 20, height: style.headerScroll.heightSubviewHeader - 5)
+            return CGRect(x: 10,
+                          y: frame.height - style.headerScroll.heightSubviewHeader - 5,
+                          width: frame.width - 20,
+                          height: style.headerScroll.heightSubviewHeader - 5)
         default:
-            return CGRect(x: 10, y: 5, width: frame.width - 20, height: style.headerScroll.heightSubviewHeader - 5)
+            return CGRect(x: 10,
+                          y: 5,
+                          width: frame.width - 20,
+                          height: style.headerScroll.heightSubviewHeader - 5)
         }
     }
     
@@ -89,6 +104,8 @@ final class ScrollDayHeaderView: UIView {
     }
     
     func scrollHeaderByTransform(_ transform: CGAffineTransform) {
+        guard !isUsedCustomHeaderView else { return }
+        
         guard !transform.isIdentity else {
             guard let scrollDate = getScrollDate(date),
                 let idx = days.firstIndex(where: { $0.date?.year == scrollDate.year
@@ -107,13 +124,19 @@ final class ScrollDayHeaderView: UIView {
     func setDate(_ date: Date, isDelay: Bool = true) {
         self.date = date
         scrollToDate(date, isAnimate: isAnimate, isDelay: isDelay)
+        guard !isUsedCustomHeaderView else { return }
+        
         collectionView.reloadData()
     }
     
-    func selectDate(offset: Int, needScrollToDate: Bool) {
-        guard let nextDate = calendar.date(byAdding: .day, value: offset, to: date) else { return }
+    @discardableResult
+    func calculateDateWithOffset(_ offset: Int, needScrollToDate: Bool) -> Date {
+        guard let nextDate = calendar.date(byAdding: .day, value: offset, to: date) else { return date }
         
-        if !style.headerScroll.isHiddenSubview && style.headerScroll.isAnimateTitleDate && titleLabel.superview != nil {
+        if !isUsedCustomHeaderView
+            && style.headerScroll.isAnimateTitleDate
+            && titleLabel.superview != nil
+        {
             let value: CGFloat
             if offset < 0 {
                 value = -40
@@ -126,7 +149,11 @@ final class ScrollDayHeaderView: UIView {
             })
         }
         
-        if subviewCustomHeader != nil, let newSubview = dataSource?.willDisplayHeaderSubview(date: nextDate, frame: subviewFrameForDevice, type: type) {
+        if subviewCustomHeader != nil,
+            let newSubview = dataSource?.willDisplayHeaderSubview(date: nextDate,
+                                                                  frame: subviewFrameForDevice,
+                                                                  type: type)
+        {
             subviewCustomHeader?.removeFromSuperview()
             subviewCustomHeader = newSubview
             addSubview(newSubview)
@@ -138,10 +165,17 @@ final class ScrollDayHeaderView: UIView {
         } else {
             selectDate(date, type: type)
         }
-        collectionView.reloadData()
+        
+        if !isUsedCustomHeaderView {
+            collectionView.reloadData()
+        }
+        
+        return nextDate
     }
     
     func getDateByPointX(_ pointX: CGFloat) -> Date? {
+        guard !isUsedCustomHeaderView else { return nil }
+        
         let startRect = CGRect(origin: collectionView.contentOffset, size: collectionView.bounds.size)
         guard let indexPath = collectionView.indexPathForItem(at: CGPoint(x: startRect.origin.x + pointX, y: startRect.midY)) else { return nil }
 
@@ -150,7 +184,7 @@ final class ScrollDayHeaderView: UIView {
     }
     
     private func setDateToTitle(_ date: Date?) {
-        if let date = date, !style.headerScroll.isHiddenSubview {
+        if let date = date, !isUsedCustomHeaderView {
             titleLabel.text = date.titleForLocale(style.locale, formatter: style.headerScroll.titleFormatter)
         }
     }
@@ -179,14 +213,17 @@ final class ScrollDayHeaderView: UIView {
     private func scrollToDate(_ date: Date, isAnimate: Bool, isDelay: Bool = true) {
         selectDate(date, type: type)
         
-        guard let scrollDate = getScrollDate(date),
+        guard !isUsedCustomHeaderView,
+              let scrollDate = getScrollDate(date),
               let idx = days.firstIndex(where: { $0.date?.year == scrollDate.year
                                             && $0.date?.month == scrollDate.month
                                             && $0.date?.day == scrollDate.day }) else { return }
         
         if isDelay {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                self.collectionView.scrollToItem(at: IndexPath(row: idx, section: 0), at: .left, animated: isAnimate)
+                self.collectionView.scrollToItem(at: IndexPath(row: idx, section: 0),
+                                                 at: .left,
+                                                 animated: isAnimate)
             }
         } else {
             collectionView.scrollToItem(at: IndexPath(row: idx, section: 0), at: .left, animated: isAnimate)
@@ -198,7 +235,11 @@ final class ScrollDayHeaderView: UIView {
     }
     
     private func selectDate(_ date: Date, type: CalendarType) {
-        if let newSubview = dataSource?.willDisplayHeaderSubview(date: date, frame: subviewFrameForDevice, type: type) {
+        if let newSubview = dataSource?.willDisplayHeaderSubview(date: date,
+                                                                 frame: subviewFrameForDevice,
+                                                                 type: type),
+           !style.headerScroll.isHiddenSubview
+        {
             subviewCustomHeader?.removeFromSuperview()
             subviewCustomHeader = newSubview
             addSubview(newSubview)
@@ -216,8 +257,8 @@ final class ScrollDayHeaderView: UIView {
 
 extension ScrollDayHeaderView: CalendarSettingProtocol {
     
-    var currentStyle: Style {
-        style
+    var style: Style {
+        params.style
     }
     
     func setUI() {
@@ -228,8 +269,11 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
         case .phone:
             newFrame.origin.y = 0
             
-            if !style.headerScroll.isHiddenSubview {
-                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date, frame: subviewFrameForDevice, type: type) {
+            if !isUsedCustomHeaderView && !style.headerScroll.isHiddenSubview {
+                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date,
+                                                                            frame: subviewFrameForDevice,
+                                                                            type: type)
+                {
                     subviewCustomHeader = subviewHeader
                     addSubview(subviewHeader)
                 } else {
@@ -241,8 +285,11 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
                 newFrame.size.height = frame.height - subviewFrameForDevice.height
             }
         default:
-            if !style.headerScroll.isHiddenSubview {
-                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date, frame: subviewFrameForDevice, type: type) {
+            if !isUsedCustomHeaderView && !style.headerScroll.isHiddenSubview {
+                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date,
+                                                                            frame: subviewFrameForDevice,
+                                                                            type: type)
+                {
                     subviewCustomHeader = subviewHeader
                     addSubview(subviewHeader)
                 } else {
@@ -258,8 +305,18 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
             }
         }
         
-        collectionView = createCollectionView(frame: newFrame, isScrollEnabled: style.headerScroll.isScrollEnabled)
-        addSubview(collectionView)
+        if let customView = dataSource?.willDisplayHeaderView(date: date, frame: newFrame, type: type) {
+            params.days = []
+            collectionView.reloadData()
+            
+            isUsedCustomHeaderView = true
+            addSubview(customView)
+        } else {
+            isUsedCustomHeaderView = false
+            collectionView = createCollectionView(frame: newFrame,
+                                                  isScrollEnabled: style.headerScroll.isScrollEnabled)
+            addSubview(collectionView)
+        }
     }
     
     func reloadFrame(_ frame: CGRect) {
@@ -270,11 +327,14 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
         case .phone:
             newFrame.origin.y = 0
             
-            if !style.headerScroll.isHiddenSubview {
+            if !isUsedCustomHeaderView && !style.headerScroll.isHiddenSubview {
                 subviewCustomHeader?.removeFromSuperview()
                 titleLabel.removeFromSuperview()
                 
-                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date, frame: subviewFrameForDevice, type: type) {
+                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date,
+                                                                            frame: subviewFrameForDevice,
+                                                                            type: type)
+                {
                     subviewCustomHeader = subviewHeader
                     addSubview(subviewHeader)
                 } else{
@@ -286,11 +346,14 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
                 newFrame.size.height = (self.frame.height - subviewFrameForDevice.height) - subviewFrameForDevice.origin.x
             }
         default:
-            if !style.headerScroll.isHiddenSubview {
+            if !isUsedCustomHeaderView && !style.headerScroll.isHiddenSubview {
                 subviewCustomHeader?.removeFromSuperview()
                 titleLabel.removeFromSuperview()
                 
-                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date, frame: subviewFrameForDevice, type: type) {
+                if let subviewHeader = dataSource?.willDisplayHeaderSubview(date: date,
+                                                                            frame: subviewFrameForDevice,
+                                                                            type: type)
+                {
                     subviewCustomHeader = subviewHeader
                     addSubview(subviewHeader)
                 } else {
@@ -306,15 +369,29 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
         }
         
         collectionView.removeFromSuperview()
-        collectionView = createCollectionView(frame: newFrame, isScrollEnabled: style.headerScroll.isScrollEnabled)
-        addSubview(collectionView)
         
-        guard let scrollDate = getScrollDate(date),
-            let idx = days.firstIndex(where: { $0.date?.year == scrollDate.year
-                && $0.date?.month == scrollDate.month
-                && $0.date?.day == scrollDate.day }) else { return }
+        if let customView = dataSource?.willDisplayHeaderView(date: date, frame: newFrame, type: type) {
+            params.days = []
+            collectionView.reloadData()
+            
+            isUsedCustomHeaderView = true
+            addSubview(customView)
+        } else {
+            isUsedCustomHeaderView = false
+            collectionView = createCollectionView(frame: newFrame,
+                                                  isScrollEnabled: style.headerScroll.isScrollEnabled)
+            addSubview(collectionView)
+        }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        guard !isUsedCustomHeaderView,
+              let scrollDate = getScrollDate(date),
+              let idx = days.firstIndex(where: { $0.date?.year == scrollDate.year
+                  && $0.date?.month == scrollDate.month
+                  && $0.date?.day == scrollDate.day }) else { return }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let self = self else { return }
+            
             self.collectionView.scrollToItem(at: IndexPath(row: idx, section: 0), at: .left, animated: false)
             self.lastContentOffset = self.collectionView.contentOffset.x
         }
@@ -322,23 +399,28 @@ extension ScrollDayHeaderView: CalendarSettingProtocol {
     }
     
     func updateStyle(_ style: Style) {
-        self.style = style
+        params.style = style
         setUI()
         scrollToDate(date, isAnimate: false)
     }
     
     private func getScrollDate(_ date: Date) -> Date? {
+        guard isFullyWeek else {
+            return date
+        }
+        
         return style.startWeekDay == .sunday ? date.startSundayOfWeek : date.startMondayOfWeek
     }
 }
 
 extension ScrollDayHeaderView: UICollectionViewDataSource {
+        
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
+        1
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return days.count
+        days.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -349,13 +431,13 @@ extension ScrollDayHeaderView: UICollectionViewDataSource {
         } else {
             switch UIDevice.current.userInterfaceIdiom {
             case .phone:
-                return collectionView.dequeueCell(indexPath: indexPath) { (cell: DayPhoneCell) in
+                return collectionView.kvkDequeueCell(indexPath: indexPath) { (cell: DayPhoneCell) in
                     cell.phoneStyle = style
                     cell.day = day
                     cell.selectDate = date
                 }
             default:
-                return collectionView.dequeueCell(indexPath: indexPath) { (cell: DayPadCell) in
+                return collectionView.kvkDequeueCell(indexPath: indexPath) { (cell: DayPadCell) in
                     cell.padStyle = style
                     cell.day = day
                     cell.selectDate = date
@@ -366,6 +448,7 @@ extension ScrollDayHeaderView: UICollectionViewDataSource {
 }
 
 extension ScrollDayHeaderView: UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let translation = scrollView.panGestureRecognizer.translation(in: collectionView)
         
@@ -385,11 +468,11 @@ extension ScrollDayHeaderView: UICollectionViewDelegate, UICollectionViewDelegat
             didTrackScrollOffset?(translation.x, true)
         } else if targetOffset.x < lastContentOffset {
             didChangeDay?(.previous)
-            selectDate(offset: -7, needScrollToDate: false)
+            calculateDateWithOffset(-maxDays, needScrollToDate: false)
             didSelectDate?(date, type)
         } else if targetOffset.x > lastContentOffset {
             didChangeDay?(.next)
-            selectDate(offset: 7, needScrollToDate: false)
+            calculateDateWithOffset(maxDays, needScrollToDate: false)
             didSelectDate?(date, type)
         }
         
@@ -421,8 +504,11 @@ extension ScrollDayHeaderView: UICollectionViewDelegate, UICollectionViewDelegat
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = collectionView.frame.width / 7
+        let width = collectionView.frame.width / CGFloat(maxDays)
         let height = collectionView.frame.height
         return CGSize(width: width, height: height)
     }
+    
 }
+
+#endif

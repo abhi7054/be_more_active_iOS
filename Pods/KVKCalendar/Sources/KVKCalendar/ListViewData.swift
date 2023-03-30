@@ -5,6 +5,8 @@
 //  Created by Sergei Kviatkovskii on 26.12.2020.
 //
 
+#if os(iOS)
+
 import Foundation
 
 public final class ListViewData {
@@ -21,6 +23,7 @@ public final class ListViewData {
     
     var sections: [SectionListView]
     var date: Date
+    var isSkeletonVisible = false
     
     init(data: CalendarData) {
         self.date = data.date
@@ -55,16 +58,17 @@ public final class ListViewData {
     }
     
     func event(indexPath: IndexPath) -> Event {
-        return sections[indexPath.section].events[indexPath.row]
+        sections[indexPath.section].events[indexPath.row]
     }
     
     func numberOfSection() -> Int {
-        return sections.count
+        isSkeletonVisible ? 2 : sections.count
     }
     
     func numberOfItemsInSection(_ section: Int) -> Int {
-        return sections[section].events.count
+        isSkeletonVisible ? 5 : sections[section].events.count
     }
     
 }
 
+#endif

@@ -1,4 +1,4 @@
-<img src="Screenshots/iphone_month.png" width="280"> <img src="Screenshots/ipad_white.png" width="530">
+<img src="Screenshots/iphone_month.png" width="280" align="top"> <img src="Screenshots/ipad_white.png" width="500" align="top">
 
 [![CI Status](https://img.shields.io/travis/kvyatkovskys/KVKCalendar.svg?style=flat)](https://travis-ci.org/kvyatkovskys/KVKCalendar)
 [![Version](https://img.shields.io/cocoapods/v/KVKCalendar.svg?style=flat)](https://cocoapods.org/pods/KVKCalendar)
@@ -9,7 +9,18 @@
 
 # KVKCalendar
 
-**KVKCalendar** is a most fully customization calendar and timeline library. Library consists of four modules for displaying various types of calendar (*day*, *week*, *month*, *year*). You can choose any module or use all. It is designed based on a standard iOS calendar, but with additional features. Timeline displays the schedule for the day and week.
+**KVKCalendar** is a most fully customization calendar. Library consists of five modules for displaying various types of calendar (*day*, *week*, *month*, *year*, *list of events*). You can choose any module or use all. It is designed based on a standard iOS calendar, but with additional features. Timeline displays the schedule for the day and the week.
+
+**Additional features:**
+- [x] Dark mode
+- [ ] Skeleton loading (month/list)
+- [x] Custom event view
+- [x] Custom date cell
+- [x] Custom header view and collection view
+- [x] Custom calendar localization
+- [x] Ability to set a divider line (day/week)
+- [x] UIMenu supports in event view (iOS/Mac Catalyst 14.0 and above)
+- [x] [Ability to configure the frame for viewing events](https://github.com/kvyatkovskys/KVKCalendar/pull/198)
 
 ## Need Help?
 
@@ -109,7 +120,7 @@ extension ViewController: CalendarDataSource {
     func eventsForCalendar(systemEvents: [EKEvent]) -> [Event] {
         // if you want to get events from iOS calendars
         // set calendar names to style.systemCalendars = ["Test"]
-        let mappedEvents = systemEvents.compactMap({ $0.transform() })
+        let mappedEvents = systemEvents.compactMap { Event(event: $0) }
         return events + mappedEvents
     }
 }

@@ -5,6 +5,8 @@
 //  Created by Sergei Kviatkovskii on 01.10.2020.
 //
 
+#if os(iOS)
+
 import UIKit
 
 final class DayPadCell: DayCell {
@@ -16,16 +18,6 @@ final class DayPadCell: DayCell {
         }
     }
     
-    override var isSelected: Bool {
-        didSet {
-            if isSelected {
-                titleLabel.frame.size.width = (frame.width * 0.5) - 5
-            } else {
-                titleLabel.frame.size.width = (frame.width * 0.5)
-            }
-        }
-    }
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -33,9 +25,8 @@ final class DayPadCell: DayCell {
         dateLabel.textAlignment = .center
         
         var titleFrame = frame
-        titleFrame.origin.x = 0
-        titleFrame.origin.y = 0
-        titleFrame.size.width = (frame.width * 0.5)
+        titleFrame.origin = .zero
+        titleFrame.size.width = frame.width * 0.49
         titleLabel.frame = titleFrame
         
         var dateFrame = frame
@@ -62,3 +53,5 @@ final class DayPadCell: DayCell {
         fatalError("init(coder:) has not been implemented")
     }
 }
+
+#endif

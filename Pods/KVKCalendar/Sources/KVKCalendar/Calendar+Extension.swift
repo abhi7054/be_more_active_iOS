@@ -5,6 +5,8 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import UIKit
 
 private enum AssociatedKeys {
@@ -31,96 +33,162 @@ extension CalendarTimer {
     }
     
     func startTimer(_ key: String = "Timer", interval: TimeInterval = 1, repeats: Bool = false, addToRunLoop: Bool = false, action: @escaping () -> Void) {
-        let timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: repeats, block: { _ in
-            action()
-        })
+        
+        let timer: Timer
+        if addToRunLoop {
+            timer = Timer(timeInterval: interval, repeats: repeats) { (_) in
+                action()
+            }
+        } else {
+            timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: repeats) { (_) in
+                action()
+            }
+        }
         
         timers[key] = timer
         
         if addToRunLoop {
-            RunLoop.current.add(timer, forMode: .default)
+            RunLoop.current.add(timer, forMode: .common)
         }
     }
     
 }
 
 extension UIScrollView {
+    
    var currentPage: Int {
-      return Int((contentOffset.x + (0.5 * frame.width)) / frame.width) + 1
+       Int((contentOffset.x + (0.5 * frame.width)) / frame.width) + 1
    }
+    
 }
 
 extension UIApplication {
+    
     var isAvailableBottomHomeIndicator: Bool {
-        if #available(iOS 13.0, *), let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-            return keyWindow.safeAreaInsets.bottom > 0
-        } else if #available(iOS 11.0, *), let keyWindow = UIApplication.shared.keyWindow {
+        if #available(iOS 15.0, *) {
+            if let keyWindow = UIApplication.shared.connectedScenes
+                .filter({$0.activationState == .foregroundActive})
+                .compactMap({ $0 as? UIWindowScene })
+                .first?.windows
+                .filter({ $0.isKeyWindow }).first
+            {
+                return keyWindow.safeAreaInsets.bottom > 0
+            } else if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                return keyWindow.safeAreaInsets.bottom > 0
+            } else {
+                return false
+            }
+        } else if #available(iOS 11.0, *),
+                  let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow })
+        {
             return keyWindow.safeAreaInsets.bottom > 0
         } else {
             return false
         }
     }
+    
 }
 
 extension UIStackView {
+    
     func addBackground(color: UIColor) {
         let view = UIView(frame: bounds)
         view.backgroundColor = color
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         insertSubview(view, at: 0)
     }
+    
 }
 
 extension Array {
+    
     func split(half: Int) -> (left: [Element], right: [Element]) {
         let leftSplit = self[0..<half]
         let rightSplit = self[half..<count]
         return (Array(leftSplit), Array(rightSplit))
     }
+    
 }
 
 extension Collection {
+    
     subscript (safe index: Index) -> Iterator.Element? {
         return indices.contains(index) ? self[index] : nil
     }
+    
+}
+
+extension Collection where Self == [Event] {
+    
+    var splitEvents: [Event.EventType: [Event]] {
+        reduce([:]) { (acc, event) -> [Event.EventType: [Event]] in
+            var accTemp = acc
+            if event.isAllDay {
+                if var values = accTemp[.allDay] {
+                    values.append(event)
+                    accTemp[.allDay] = values
+                } else {
+                    accTemp[.allDay] = [event]
+                }
+            } else {
+                if var values = accTemp[.usual] {
+                    values.append(event)
+                    accTemp[.usual] = values
+                } else {
+                    accTemp[.usual] = [event]
+                }
+            }
+            return accTemp
+        }
+    }
+    
 }
 
 extension UICollectionView {
-    func register<T: UICollectionViewCell>(_ cell: T.Type, id: String? = nil) {
+    
+    func kvkRegister<T: UICollectionViewCell>(_ cell: T.Type, id: String? = nil) {
         register(T.self, forCellWithReuseIdentifier: id ?? cell.kvkIdentifier)
     }
     
-    func registerView<T: UICollectionReusableView>(_ view: T.Type, id: String? = nil, kind: String = UICollectionView.elementKindSectionHeader) {
+    func kvkRegisterView<T: UICollectionReusableView>(_ view: T.Type, id: String? = nil, kind: String = UICollectionView.elementKindSectionHeader) {
         register(T.self, forSupplementaryViewOfKind: kind, withReuseIdentifier: id ?? view.kvkIdentifier)
     }
+    
 }
 
 public extension UIView {
+    
     static var kvkIdentifier: String {
         return String(describing: self)
     }
+    
 }
 
 extension UITableView {
-    func register<T: UITableViewCell>(_ cell: T.Type) {
+    
+    func kvkRegister<T: UITableViewCell>(_ cell: T.Type) {
         register(T.self, forCellReuseIdentifier: cell.kvkIdentifier)
     }
     
-    func register<T: UIView>(_ view: T.Type) {
+    func kvkRegister<T: UIView>(_ view: T.Type) {
         register(T.self, forHeaderFooterViewReuseIdentifier: view.kvkIdentifier)
     }
+    
 }
 
 extension UIColor {
+    
     @available(iOS 13, *)
     static func useForStyle(dark: UIColor, white: UIColor) -> UIColor {
         return UIColor { (traitCollection: UITraitCollection) -> UIColor in
             return traitCollection.userInterfaceStyle == .dark ? dark : white
         }
     }
+    
 }
 
 extension UIScreen {
+    
     static var isDarkMode: Bool {
         if #available(iOS 12.0, *) {
             return main.traitCollection.userInterfaceStyle == .dark
@@ -128,9 +196,11 @@ extension UIScreen {
             return false
         }
     }
+    
 }
 
 extension UIView {
+    
     func setBlur(style: UIBlurEffect.Style) {
         let blur = UIBlurEffect(style: style)
         let blurView = UIVisualEffectView(effect: blur)
@@ -181,9 +251,11 @@ extension UIView {
             action()
         }
     }
+    
 }
 
 extension UIRectCorner {
+    
     var convertedCorners: CACornerMask {
         switch self {
         case .allCorners:
@@ -200,11 +272,13 @@ extension UIRectCorner {
             return []
         }
     }
+    
 }
 
 public extension UITableView {
-    func dequeueCell<T: UITableViewCell>(id: String = T.kvkIdentifier, indexPath: IndexPath? = nil, configure: (T) -> Void) -> T {
-        register(T.self)
+    
+    func kvkDequeueCell<T: UITableViewCell>(id: String = T.kvkIdentifier, indexPath: IndexPath? = nil, configure: (T) -> Void) -> T {
+        kvkRegister(T.self)
         
         let cell: T
         if let index = indexPath, let dequeued = dequeueReusableCell(withIdentifier: id, for: index) as? T {
@@ -219,8 +293,8 @@ public extension UITableView {
         return cell
     }
     
-    func dequeueView<T: UIView>(id: String = T.kvkIdentifier, configure: (T) -> Void) -> T {
-        register(T.self)
+    func kvkDequeueView<T: UIView>(id: String = T.kvkIdentifier, configure: (T) -> Void) -> T {
+        kvkRegister(T.self)
         
         let view: T
         if let dequeued = dequeueReusableHeaderFooterView(withIdentifier: id) as? T {
@@ -232,11 +306,13 @@ public extension UITableView {
         configure(view)
         return view
     }
+    
 }
 
 public extension UICollectionView {
-    func dequeueCell<T: UICollectionViewCell>(id: String = T.kvkIdentifier, indexPath: IndexPath, configure: (T) -> Void) -> T {
-        register(T.self, id: id)
+    
+    func kvkDequeueCell<T: UICollectionViewCell>(id: String = T.kvkIdentifier, indexPath: IndexPath, configure: (T) -> Void) -> T {
+        kvkRegister(T.self, id: id)
         
         let cell: T
         if let dequeued = dequeueReusableCell(withReuseIdentifier: id, for: indexPath) as? T {
@@ -249,8 +325,8 @@ public extension UICollectionView {
         return cell
     }
     
-    func dequeueView<T: UICollectionReusableView>(id: String = T.kvkIdentifier, kind: String = UICollectionView.elementKindSectionHeader, indexPath: IndexPath, configure: (T) -> Void) -> T {
-        registerView(T.self, id: id, kind: kind)
+    func kvkDequeueView<T: UICollectionReusableView>(id: String = T.kvkIdentifier, kind: String = UICollectionView.elementKindSectionHeader, indexPath: IndexPath, configure: (T) -> Void) -> T {
+        kvkRegisterView(T.self, id: id, kind: kind)
         
         let view: T
         if let dequeued = dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: id, for: indexPath) as? T {
@@ -262,17 +338,24 @@ public extension UICollectionView {
         configure(view)
         return view
     }
+    
 }
 
 @available(iOS 13.4, *)
 protocol PointerInteractionProtocol: UIPointerInteractionDelegate {
+    
     func addPointInteraction(on view: UIView, delegate: UIPointerInteractionDelegate)
+    
 }
 
 @available(iOS 13.4, *)
 extension PointerInteractionProtocol {
+    
     func addPointInteraction(on view: UIView, delegate: UIPointerInteractionDelegate) {
         let interaction = UIPointerInteraction(delegate: delegate)
         view.addInteraction(interaction)
     }
+    
 }
+
+#endif

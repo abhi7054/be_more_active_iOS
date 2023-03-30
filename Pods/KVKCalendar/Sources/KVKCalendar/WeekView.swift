@@ -5,12 +5,24 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import UIKit
 
 final class WeekView: UIView {
-    private var visibleDates: [Date?] = []
-    private var data: WeekData
-    private var style: Style
+    
+    struct Parameters {
+        var visibleDates: [Date?] = []
+        var data: WeekData
+        var style: Style
+    }
+    
+    private var parameters: Parameters
+    private var timelineScale: CGFloat
+    
+    private var isFullyWeek: Bool {
+        style.week.maxDays == 7
+    }
     
     weak var delegate: DisplayDelegate?
     weak var dataSource: DisplayDataSource?
@@ -22,28 +34,32 @@ final class WeekView: UIView {
         } else {
             heightView = style.headerScroll.heightHeaderWeek + style.headerScroll.heightSubviewHeader
         }
-        let view = ScrollDayHeaderView(parameters: .init(frame: CGRect(x: 0, y: 0, width: frame.width, height: heightView),
-                                                         days: data.days,
-                                                         date: data.date,
+        let view = ScrollDayHeaderView(parameters: .init(frame: CGRect(x: 0, y: 0,
+                                                                       width: frame.width, height: heightView),
+                                                         days: parameters.data.days,
+                                                         date: parameters.data.date,
                                                          type: .week,
                                                          style: style))
         view.didSelectDate = { [weak self] (date, type) in
-            self?.didSelectDateScrollHeader(date, type: type)
+            if let item = date {
+                self?.parameters.data.date = item
+                self?.didSelectDate(item, type: type)
+            }
         }
         view.didTrackScrollOffset = { [weak self] (offset, stop) in
-            self?.timelinePages.timelineView?.moveEvents(offset: offset, stop: stop)
+            self?.timelinePage.timelineView?.moveEvents(offset: offset, stop: stop)
         }
         view.didChangeDay = { [weak self] (type) in
             guard let self = self else { return }
             
-            self.timelinePages.changePage(type)
-            let newTimeline = self.createTimelineView(frame: CGRect(origin: .zero, size: self.timelinePages.bounds.size))
+            self.timelinePage.changePage(type)
+            let newTimeline = self.createTimelineView(frame: CGRect(origin: .zero, size: self.timelinePage.bounds.size))
             
             switch type {
             case .next:
-                self.timelinePages.addNewTimelineView(newTimeline, to: .end)
+                self.timelinePage.addNewTimelineView(newTimeline, to: .end)
             case .previous:
-                self.timelinePages.addNewTimelineView(newTimeline, to: .begin)
+                self.timelinePage.addNewTimelineView(newTimeline, to: .begin)
             }
         }
         return view
@@ -53,16 +69,21 @@ final class WeekView: UIView {
         var viewFrame = frame
         viewFrame.origin = .zero
         
-        let view = TimelineView(type: .week, style: style, frame: viewFrame)
+        let view = TimelineView(parameters: .init(style: style, type: .week, scale: timelineScale), frame: viewFrame)
         view.delegate = self
         view.dataSource = self
         view.deselectEvent = { [weak self] (event) in
             self?.delegate?.didDeselectEvent(event, animated: true)
         }
+        view.didChangeScale = { [weak self] (newScale) in
+            if newScale != self?.timelineScale {
+                self?.timelineScale = newScale
+            }
+        }
         return view
     }
     
-    lazy var timelinePages: TimelinePageView = {
+    lazy var timelinePage: TimelinePageView = {
         var timelineFrame = frame
         
         if !style.headerScroll.isHidden {
@@ -70,10 +91,10 @@ final class WeekView: UIView {
             timelineFrame.size.height -= scrollHeaderDay.frame.height
         }
         
-        let timelineViews = Array(0..<style.timeline.maxLimitChachedPages).reduce([]) { (acc, _) -> [TimelineView] in
+        let timelineViews = Array(0..<style.timeline.maxLimitCachedPages).reduce([]) { (acc, _) -> [TimelineView] in
             return acc + [createTimelineView(frame: timelineFrame)]
         }
-        let page = TimelinePageView(maxLimit: style.timeline.maxLimitChachedPages,
+        let page = TimelinePageView(maxLimit: style.timeline.maxLimitCachedPages,
                                     pages: timelineViews,
                                     frame: timelineFrame)
         return page
@@ -95,78 +116,93 @@ final class WeekView: UIView {
         let label = UILabel()
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
-        label.textColor = style.headerScroll.colorTitleCornerDate
+        label.textColor = parameters.style.headerScroll.colorTitleCornerDate
         return label
     }()
     
-    init(data: WeekData, frame: CGRect, style: Style) {
-        self.style = style
-        self.data = data
+    init(parameters: Parameters, frame: CGRect) {
+        self.parameters = parameters
+        self.timelineScale = parameters.style.timeline.scale?.min ?? 1
         super.init(frame: frame)
         setUI()
         
-        timelinePages.didSwitchTimelineView = { [weak self] (timeline, type) in
+        timelinePage.didSwitchTimelineView = { [weak self] (timeline, type) in
             guard let self = self else { return }
             
-            let newTimeline = self.createTimelineView(frame: self.timelinePages.frame)
+            let newTimeline = self.createTimelineView(frame: self.timelinePage.frame)
             
             switch type {
             case .next:
                 self.nextDate()
-                self.timelinePages.addNewTimelineView(newTimeline, to: .end)
+                self.timelinePage.addNewTimelineView(newTimeline, to: .end)
             case .previous:
                 self.previousDate()
-                self.timelinePages.addNewTimelineView(newTimeline, to: .begin)
+                self.timelinePage.addNewTimelineView(newTimeline, to: .begin)
             }
             
-            self.didSelectDateScrollHeader(self.scrollHeaderDay.date, type: .week)
+            self.didSelectDate(self.scrollHeaderDay.date, type: .week)
         }
         
-        timelinePages.willDisplayTimelineView = { [weak self] (timeline, type) in
+        timelinePage.willDisplayTimelineView = { [weak self] (timeline, type) in
             guard let self = self else { return }
             
             let nextDate: Date?
             switch type {
             case .next:
-                nextDate = self.style.calendar.date(byAdding: .day, value: 7, to: self.data.date)
+                nextDate = self.parameters.style.calendar.date(byAdding: .day,
+                                                               value: self.style.week.maxDays,
+                                                               to: self.parameters.data.date)
             case .previous:
-                nextDate = self.style.calendar.date(byAdding: .day, value: -7, to: self.data.date)
+                nextDate = self.parameters.style.calendar.date(byAdding: .day,
+                                                               value: -self.style.week.maxDays,
+                                                               to: self.parameters.data.date)
             }
             
-            if let offset = self.timelinePages.timelineView?.contentOffset {
+            if let offset = self.timelinePage.timelineView?.contentOffset {
                 timeline.contentOffset = offset
             }
             
-            timeline.create(dates: self.getVisibleDatesFor(date: nextDate ?? self.data.date), events: self.data.events, selectedDate: self.data.date)
+            timeline.create(dates: self.getVisibleDatesFor(date: nextDate ?? self.parameters.data.date),
+                            events: self.parameters.data.events,
+                            recurringEvents: parameters.data.recurringEvents,
+                            selectedDate: self.parameters.data.date)
         }
     }
     
     func setDate(_ date: Date) {
-        data.date = date
+        parameters.data.date = date
         scrollHeaderDay.setDate(date)
-        visibleDates = getVisibleDatesFor(date: data.date)
+        parameters.visibleDates = getVisibleDatesFor(date: date)
     }
     
     func reloadData(_ events: [Event]) {
-        data.events = events
-        timelinePages.timelineView?.create(dates: visibleDates, events: events, selectedDate: data.date)
+        parameters.data.recurringEvents = events.filter { $0.recurringType != .none }
+        parameters.data.events = parameters.data.filterEvents(events, dates: parameters.visibleDates)
+        timelinePage.timelineView?.create(dates: parameters.visibleDates,
+                                          events: parameters.data.events,
+                                          recurringEvents: parameters.data.recurringEvents,
+                                          selectedDate: parameters.data.date)
     }
     
     private func getVisibleDatesFor(date: Date) -> [Date?] {
         guard let scrollDate = getScrollDate(date: date),
-            let idx = data.days.firstIndex(where: { $0.date?.year == scrollDate.year
-                && $0.date?.month == scrollDate.month
-                && $0.date?.day == scrollDate.day }) else { return [] }
+              let idx = parameters.data.days.firstIndex(where: { $0.date?.year == scrollDate.year
+                  && $0.date?.month == scrollDate.month
+                  && $0.date?.day == scrollDate.day }) else { return [] }
         
-        var endIdx = idx + 7
-        if endIdx > data.days.count {
-            endIdx = data.days.count
+        var endIdx = idx + style.week.maxDays
+        if endIdx > parameters.data.days.count {
+            endIdx = parameters.data.days.count
         }
-        let newVisibleDates = data.days[idx..<endIdx].map({ $0.date })
+        let newVisibleDates = parameters.data.days[idx..<endIdx].map { $0.date }
         return newVisibleDates
     }
     
     private func getScrollDate(date: Date) -> Date? {
+        guard isFullyWeek else {
+            return date
+        }
+        
         return style.startWeekDay == .sunday ? date.startSundayOfWeek : date.startMondayOfWeek
     }
     
@@ -176,33 +212,39 @@ final class WeekView: UIView {
 }
 
 extension WeekView: DisplayDataSource {
+    
     func willDisplayEventView(_ event: Event, frame: CGRect, date: Date?) -> EventViewGeneral? {
-        return dataSource?.willDisplayEventView(event, frame: frame, date: date)
+        dataSource?.willDisplayEventView(event, frame: frame, date: date)
     }
+    
+    @available(iOS 14.0, *)
+    func willDisplayEventOptionMenu(_ event: Event, type: CalendarType) -> (menu: UIMenu, customButton: UIButton?)? {
+        dataSource?.willDisplayEventOptionMenu(event, type: type)
+    }
+    
 }
 
 extension WeekView {
-    func didSelectDateScrollHeader(_ date: Date?, type: CalendarType) {
-        guard let selectDate = date else { return }
-        
-        data.date = selectDate
-        let newDates = getVisibleDatesFor(date: selectDate)
-        if visibleDates != newDates {
-            visibleDates = newDates
+    
+    private func didSelectDate(_ date: Date, type: CalendarType) {
+        let newDates = getVisibleDatesFor(date: date)
+        if parameters.visibleDates != newDates {
+            parameters.visibleDates = newDates
         }
-        delegate?.didSelectDates([selectDate], type: type, frame: nil)
+        delegate?.didSelectDates([date], type: type, frame: nil)
     }
+    
 }
 
 extension WeekView: CalendarSettingProtocol {
     
-    var currentStyle: Style {
-        style
+    var style: Style {
+        parameters.style
     }
     
     func reloadFrame(_ frame: CGRect) {
         self.frame = frame
-        var timelineFrame = timelinePages.frame
+        var timelineFrame = timelinePage.frame
         timelineFrame.size.width = frame.width
         
         if !style.headerScroll.isHidden {
@@ -213,17 +255,20 @@ extension WeekView: CalendarSettingProtocol {
             timelineFrame.size.height = frame.height
         }
         
-        timelinePages.frame = timelineFrame
-        timelinePages.timelineView?.reloadFrame(CGRect(origin: .zero, size: timelineFrame.size))
-        timelinePages.timelineView?.create(dates: visibleDates, events: data.events, selectedDate: data.date)
-        timelinePages.reloadCacheControllers()
+        timelinePage.frame = timelineFrame
+        timelinePage.timelineView?.reloadFrame(CGRect(origin: .zero, size: timelineFrame.size))
+        timelinePage.timelineView?.create(dates: parameters.visibleDates,
+                                          events: parameters.data.events,
+                                          recurringEvents: parameters.data.recurringEvents,
+                                          selectedDate: parameters.data.date)
+        timelinePage.reloadCacheControllers()
     }
     
     func updateStyle(_ style: Style) {
-        self.style = style
+        parameters.style = style
         scrollHeaderDay.updateStyle(style)
-        timelinePages.updateStyle(style)
-        timelinePages.reloadPages()
+        timelinePage.updateStyle(style)
+        timelinePage.reloadPages()
         setUI()
         reloadFrame(frame)
     }
@@ -233,12 +278,14 @@ extension WeekView: CalendarSettingProtocol {
         
         addSubview(topBackgroundView)
         topBackgroundView.addSubview(scrollHeaderDay)
-        addSubview(timelinePages)
-        timelinePages.isPagingEnabled = style.timeline.scrollDirections.contains(.horizontal)
+        addSubview(timelinePage)
+        timelinePage.isPagingEnabled = style.timeline.scrollDirections.contains(.horizontal)
     }
+    
 }
 
 extension WeekView: TimelineDelegate {
+    
     func didDisplayEvents(_ events: [Event], dates: [Date?]) {
         delegate?.didDisplayEvents(events, dates: dates, type: .week)
     }
@@ -248,11 +295,11 @@ extension WeekView: TimelineDelegate {
     }
     
     func nextDate() {
-        scrollHeaderDay.selectDate(offset: 7, needScrollToDate: true)
+        parameters.data.date = scrollHeaderDay.calculateDateWithOffset(style.week.maxDays, needScrollToDate: true)
     }
     
     func previousDate() {
-        scrollHeaderDay.selectDate(offset: -7, needScrollToDate: true)
+        parameters.data.date = scrollHeaderDay.calculateDateWithOffset(-style.week.maxDays, needScrollToDate: true)
     }
     
     func swipeX(transform: CGAffineTransform, stop: Bool) {
@@ -277,7 +324,7 @@ extension WeekView: TimelineDelegate {
         endComponents.hour = endTime.hour
         endComponents.minute = endTime.minute
         let endDate = style.calendar.date(from: endComponents)
-                
+        
         delegate?.didChangeEvent(event, start: startDate, end: endDate)
     }
     
@@ -325,4 +372,7 @@ extension WeekView: TimelineDelegate {
         
         delegate?.didChangeEvent(event, start: startDate, end: endDate)
     }
+    
 }
+
+#endif

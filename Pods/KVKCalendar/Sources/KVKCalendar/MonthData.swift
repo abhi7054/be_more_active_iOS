@@ -5,23 +5,25 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import UIKit
 
 final class MonthData: EventDateProtocol {
+    
+    typealias DayOfMonth = (indexPath: IndexPath, day: Day?, weeks: Int)
     
     struct Parameters {
         let data: CalendarData
         let startDay: StartDayType
         let calendar: Calendar
-        let monthStyle: MonthStyle
+        let style: Style
     }
     
-    var willSelectDate: Date
     var date: Date
     var data: CalendarData
     let daysCount: Int
     
-    var isAnimate: Bool = false
     let tagEventPagePreview = -20
     let eventPreviewYOffset: CGFloat = 30
     var eventPreviewXOffset: CGFloat = 60
@@ -30,26 +32,36 @@ final class MonthData: EventDateProtocol {
     var isFirstLoad = true
     var movingEvent: EventViewGeneral?
     var selectedDates: Set<Date> = []
+    var isSkeletonVisible = false
+    var days: [IndexPath: DayOfMonth] = [:]
+    var customEventsView: [Date: UIView] = [:]
     
     private let calendar: Calendar
     private let scrollDirection: UICollectionView.ScrollDirection
+    private let showRecurringEventInPast: Bool
     
     init(parameters: Parameters) {
         self.data = parameters.data
         self.calendar = parameters.calendar
-        self.scrollDirection = parameters.monthStyle.scrollDirection
+        self.scrollDirection = parameters.style.month.scrollDirection
+        self.showRecurringEventInPast = parameters.style.event.showRecurringEventInPast
         
         let months = parameters.data.months.reduce([], { (acc, month) -> [Month] in
             var daysTemp = parameters.data.addStartEmptyDays(month.days, startDay: parameters.startDay)
-            if let lastDay = daysTemp.last, daysTemp.count < parameters.data.boxCount {
-                var emptyEndDays = Array(1...(parameters.data.boxCount - daysTemp.count)).compactMap { (idx) -> Day in
+            
+            let boxCount: Int
+            switch month.weeks {
+            case 5 where parameters.style.month.scrollDirection == .vertical:
+                boxCount = parameters.data.minBoxCount
+            default:
+                boxCount = parameters.data.maxBoxCount
+            }
+            
+            if let lastDay = daysTemp.last, daysTemp.count < boxCount {
+                let emptyEndDays = Array(1...(boxCount - daysTemp.count)).compactMap { (idx) -> Day in
                     var day = Day.empty()
                     day.date = parameters.data.getOffsetDate(offset: idx, to: lastDay.date)
                     return day
-                }
-                
-                if !parameters.monthStyle.isPagingEnabled && emptyEndDays.count > 7 && parameters.monthStyle.scrollDirection == .vertical {
-                    emptyEndDays = emptyEndDays.dropLast(7)
                 }
                 
                 daysTemp += emptyEndDays
@@ -60,19 +72,19 @@ final class MonthData: EventDateProtocol {
         })
         self.data.months = months
         self.date = parameters.data.date
-        self.willSelectDate = data.date
         self.daysCount = months.reduce(0, { $0 + $1.days.count })
     }
     
     private func compareDate(day: Day, date: Date?) -> Bool {
-        return day.date?.year == date?.year && day.date?.month == date?.month
+        day.date?.year == date?.year && day.date?.month == date?.month
     }
     
-    func getDay(indexPath: IndexPath) -> Day? {
+    func getDay(indexPath: IndexPath) -> DayOfMonth {
         // TODO: we got a crash sometime when use a horizontal scroll direction
         // got index out of array
         // safe: -> optional subscript
-        return data.months[indexPath.section].days[safe: indexPath.row]
+        let month = data.months[indexPath.section]
+        return (indexPath, month.days[safe: indexPath.row], month.weeks)
     }
     
     func updateSelectedDates(_ dates: Set<Date>, date: Date, calendar: Calendar) -> Set<Date> {
@@ -115,17 +127,22 @@ final class MonthData: EventDateProtocol {
             var newDay = day
             guard newDay.events.isEmpty else { return acc + [day] }
             
-            let filteredEventsByDay = events.filter({ compareStartDate(day.date, with: $0) && !$0.isAllDay })
-            let filteredAllDayEvents = events.filter({ $0.isAllDay })
-            let allDayEvents = filteredAllDayEvents.filter({ compareStartDate(day.date, with: $0) || compareEndDate(day.date, with: $0) })
+            let filteredEventsByDay = events.filter { compareStartDate(day.date, with: $0) && !$0.isAllDay }
+            let filteredAllDayEvents = events.filter { $0.isAllDay }
+            let allDayEvents = filteredAllDayEvents.filter {
+                compareStartDate(day.date, with: $0)
+                || compareEndDate(day.date, with: $0)
+                || checkMultipleDate(day.date, with: $0)
+            }
             
             let recurringEventByDate: [Event]
             if !recurringEvents.isEmpty, let date = day.date {
                 recurringEventByDate = recurringEvents.reduce([], { (acc, event) -> [Event] in
                     guard !filteredEventsByDay.contains(where: { $0.ID == event.ID })
-                            && date.compare(event.start) == .orderedDescending else { return acc }
+                            && (date.compare(event.start) == .orderedDescending
+                                || showRecurringEventInPast) else { return acc }
                     
-                    guard let recurringEvent = event.updateDate(newDate: day.date, calendar: calendar) else {
+                    guard let recurringEvent = event.updateDate(newDate: date, calendar: calendar) else {
                         return acc
                     }
                     
@@ -148,12 +165,14 @@ final class MonthData: EventDateProtocol {
 
 extension MonthData {
     var middleRowInPage: Int {
-        return (rowsInPage * columnsInPage) / 2
+        (rowsInPage * columnsInPage) / 2
     }
     var columns: Int {
-        return ((daysCount / itemsInPage) * columnsInPage) + (daysCount % itemsInPage)
+        ((daysCount / itemsInPage) * columnsInPage) + (daysCount % itemsInPage)
     }
     var itemsInPage: Int {
-        return columnsInPage * rowsInPage
+        columnsInPage * rowsInPage
     }
 }
+
+#endif

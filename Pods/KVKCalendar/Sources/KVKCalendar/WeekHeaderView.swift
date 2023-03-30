@@ -5,17 +5,24 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import UIKit
 
 final class WeekHeaderView: UIView {
-    private var style: Style
-    private let isFromYear: Bool
+    
+    struct Parameters {
+        var style: Style
+        var isFromYear: Bool = false
+    }
+    
+    private var parameters: Parameters
     private var days = [Date]()
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.textAlignment = style.month.titleDateAlignment
-        label.font = style.month.fontTitleDate
+        label.textAlignment = style.month.titleHeaderAlignment
+        label.font = style.month.fontTitleHeader
         label.tag = -999
         return label
     }()
@@ -26,9 +33,8 @@ final class WeekHeaderView: UIView {
         }
     }
     
-    init(frame: CGRect, style: Style, fromYear: Bool = false) {
-        self.style = style
-        self.isFromYear = fromYear
+    init(parameters: Parameters, frame: CGRect) {
+        self.parameters = parameters
         super.init(frame: frame)
         setUI()
     }
@@ -49,15 +55,22 @@ final class WeekHeaderView: UIView {
             days = Array(0..<7).compactMap({ getOffsetDate(offset: $0, to: startWeekDate) })
         }
         
-        if !style.month.isHiddenTitleDate && !isFromYear {
+        if !style.month.isHiddenTitleHeader && !isFromYear {
             titleLabel.frame = CGRect(x: 10,
                                       y: 5,
                                       width: frame.width - 20,
-                                      height: style.month.heightTitleDate)
+                                      height: style.month.heightTitleHeader)
             addSubview(titleLabel)
         }
         
-        let y = isFromYear ? 0 : (style.month.heightTitleDate + 5)
+        let y: CGFloat
+        if isFromYear {
+            y = 0
+        } else if !style.month.isHiddenTitleHeader {
+            y = style.month.heightTitleHeader + 5
+        } else {
+            y = 0
+        }
         let xOffset: CGFloat = isFromYear ? 0 : 10
         let width = frame.width / CGFloat(days.count)
         for (idx, value) in days.enumerated() {
@@ -93,13 +106,13 @@ final class WeekHeaderView: UIView {
     }
     
     private func setDateToTitle(date: Date?, style: Style) {
-        if let date = date, !style.month.isHiddenTitleDate, !isFromYear {
+        if let date = date, !style.month.isHiddenTitleHeader, !isFromYear {
             titleLabel.text = date.titleForLocale(style.locale, formatter: style.month.titleFormatter)
             
             if Date().year == date.year && Date().month == date.month {
-                titleLabel.textColor = .systemRed
+                titleLabel.textColor = style.month.colorTitleCurrentDate
             } else {
-                titleLabel.textColor = style.month.colorTitleDate
+                titleLabel.textColor = style.month.colorTitleHeader
             }
         }
     }
@@ -107,8 +120,12 @@ final class WeekHeaderView: UIView {
 
 extension WeekHeaderView: CalendarSettingProtocol {
     
-    var currentStyle: Style {
-        style
+    var style: Style {
+        parameters.style
+    }
+    
+    var isFromYear: Bool {
+        parameters.isFromYear
     }
     
     func setUI() {
@@ -128,7 +145,9 @@ extension WeekHeaderView: CalendarSettingProtocol {
     }
     
     func updateStyle(_ style: Style) {
-        self.style = style
+        parameters.style = style
         setUI()
     }
 }
+
+#endif

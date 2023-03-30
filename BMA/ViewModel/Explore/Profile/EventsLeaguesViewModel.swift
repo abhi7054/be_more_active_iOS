@@ -25,7 +25,7 @@ struct EventsLeaguesViewModel: EventsLeaguesDelegate {
                     let success = try JSONDecoder().decode(EventListResponse.self, from: response!) // decode the response into model
                     switch success.code{
                     case 100:
-                        self.eventList.value = success.data
+                        self.eventList.value = success.data ?? []
                         self.success.value = true
                         break
                     default:

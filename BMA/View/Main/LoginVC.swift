@@ -96,7 +96,7 @@ class LoginVC: SocialLogin {
         if !termsCheckBtn.isSelected {
             displayToast(STATIC_LABELS.termsCheckToast.rawValue)
         } else {
-            self.loginWithFacebook()
+//            self.loginWithFacebook()
         }
     }
     

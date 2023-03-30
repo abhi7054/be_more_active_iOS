@@ -5,6 +5,8 @@
 //  Created by Sergei Kviatkovskii on 22.05.2021.
 //
 
+#if os(iOS)
+
 import UIKit
 
 final class AllDayEventView: UIView {
@@ -34,7 +36,7 @@ final class AllDayEventView: UIView {
         bgView.addSubview(textLabel)
         
         textLabel.backgroundColor = event.backgroundColor
-        textLabel.text = event.text
+        textLabel.text = event.title.timeline
         textLabel.textColor = event.textColor
         textLabel.font = style.fontTitle
         
@@ -63,3 +65,5 @@ final class AllDayEventView: UIView {
         textLabel.textColor = event.textColor
     }
 }
+
+#endif

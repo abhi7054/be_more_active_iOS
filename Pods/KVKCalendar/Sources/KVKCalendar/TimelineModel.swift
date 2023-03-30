@@ -5,37 +5,13 @@
 //  Created by Sergei Kviatkovskii on 09.03.2020.
 //
 
+#if os(iOS)
+
 import UIKit
-
-struct CrossEvent: Hashable {
-    let eventTime: EventTime
-    var count: Int
-    
-    init(eventTime: EventTime, count: Int = 1) {
-        self.eventTime = eventTime
-        self.count = count
-    }
-    
-    static func == (lhs: CrossEvent, rhs: CrossEvent) -> Bool {
-        return lhs.eventTime == rhs.eventTime
-            && lhs.count == rhs.count
-    }
-}
-
-extension CrossEvent {
-    var displayValue: String {
-        return "\(Date(timeIntervalSince1970: eventTime.start).toLocalTime()) - \(Date(timeIntervalSince1970: eventTime.end).toLocalTime()) = \(count)"
-    }
-}
 
 struct TimeContainer {
     var minute: Int
     var hour: Int
-}
-
-struct EventTime: Equatable, Hashable {
-    let start: TimeInterval
-    let end: TimeInterval
 }
 
 typealias ResizeTime = (hour: Int, minute: Int)
@@ -55,15 +31,15 @@ extension TimelineDelegate {
     func swipeX(transform: CGAffineTransform, stop: Bool) {}
 }
 
-protocol EventDateProtocol {}
+protocol EventDateProtocol: AnyObject {}
 
 extension EventDateProtocol {
     func compareStartDate(_ date: Date?, with event: Event) -> Bool {
-        return event.start.year == date?.year && event.start.month == date?.month && event.start.day == date?.day
+        event.start.year == date?.year && event.start.month == date?.month && event.start.day == date?.day
     }
     
     func compareEndDate(_ date: Date?, with event: Event) -> Bool {
-        return event.end.year == date?.year && event.end.month == date?.month && event.end.day == date?.day
+        event.end.year == date?.year && event.end.month == date?.month && event.end.day == date?.day
     }
     
     func checkMultipleDate(_ date: Date?, with event: Event) -> Bool {
@@ -90,3 +66,5 @@ extension TimelineView {
         case up, down
     }
 }
+
+#endif

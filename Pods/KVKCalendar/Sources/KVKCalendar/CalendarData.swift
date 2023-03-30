@@ -5,12 +5,15 @@
 //  Created by Sergei Kviatkovskii on 02/01/2019.
 //
 
+#if os(iOS)
+
 import Foundation
 
 struct CalendarData {
     private let style: Style
     
-    let boxCount = 42
+    let maxBoxCount = 42
+    let minBoxCount = 35
     let date: Date
     var months = [Month]()
     var yearsCount = [Int]()
@@ -20,9 +23,9 @@ struct CalendarData {
         self.style = style
         
         // count years for calendar
-        let indexsYear = [Int](repeating: 0, count: years).split(half: years / 2)
-        let lastYear = indexsYear.left
-        let nextYear = indexsYear.right
+        let indexesYear = [Int](repeating: 0, count: years).split(half: years / 2)
+        let lastYear = indexesYear.left
+        let nextYear = indexesYear.right
                 
         // last years
         for lastIdx in lastYear.indices.reversed() where years > 1 {
@@ -55,12 +58,15 @@ struct CalendarData {
                 let year = calendar.component(.year, from: yearDate ?? date)
                 dateMonths = Array(monthsOfYearRange.lowerBound..<monthsOfYearRange.upperBound).compactMap({ monthOfYear -> Date? in
                     var components = DateComponents(year: year, month: monthOfYear)
-                    components.day = 2
+                    components.day = 1
                     return calendar.date(from: components)
                 })
             }
             
-            var months = zip(nameMonths, dateMonths).map({ Month(name: $0.0, date: $0.1, days: []) })
+            var months = zip(nameMonths, dateMonths).map { Month(name: $0.0,
+                                                                 date: $0.1,
+                                                                 days: [],
+                                                                 weeks: numberOfWeeksInMonth($0.1, calendar: calendar)) }
             
             for (idx, month) in months.enumerated() {
                 let days = getDaysInMonth(month: idx + 1, date: month.date)
@@ -89,7 +95,7 @@ struct CalendarData {
         return days
     }
     
-    func addStartEmptyDays(_ days: [Day], startDay: StartDayType) -> [Day] {
+    func addStartEmptyDays(_ days: [Day], startDay: StartDayType, maxDaysInWeek: Int? = nil) -> [Day] {
         var tempDays = [Day]()
         if let firstDay = days.first {
             var endIdx = (firstDay.date?.weekday ?? 1)
@@ -117,7 +123,7 @@ struct CalendarData {
         return tempDays
     }
     
-    func addEndEmptyDays(_ days: [Day], startDay: StartDayType) -> [Day] {
+    func addEndEmptyDays(_ days: [Day], startDay: StartDayType, maxDaysInWeek: Int? = nil) -> [Day] {
         var tempDays = [Day]()
         if let lastDay = days.last {
             var emptyDays = [Day]()
@@ -145,6 +151,15 @@ struct CalendarData {
         return tempDays
     }
     
+    func numberOfWeeksInMonth(_ date: Date?, calendar: Calendar) -> Int {
+        guard let dt = date else { return 6 }
+        
+        var item = calendar
+        item.firstWeekday = 1
+        let weekRange = item.range(of: .weekOfMonth, in: .month, for: dt)
+        return weekRange?.count ?? 6
+    }
+    
     func getOffsetDate(offset: Int, to date: Date?) -> Date? {
         guard let dateTemp = date else { return nil }
         
@@ -166,6 +181,7 @@ struct Month {
     let name: String
     let date: Date
     var days: [Day]
+    var weeks: Int
 }
 
 struct Day {
@@ -204,3 +220,5 @@ public enum DayType: String, CaseIterable {
 public enum StartDayType: Int {
     case monday, sunday
 }
+
+#endif
