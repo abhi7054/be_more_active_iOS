@@ -263,10 +263,11 @@ class CreateEvent_TwoVC: UIViewController {
         else if !email.isValidEmail {
             displayToast(STATIC_LABELS.notValidEmail.rawValue)
         }
-        else if webUrl != DocumentDefaultValues.Empty.string {
+        else if webUrl == DocumentDefaultValues.Empty.string && !webUrl.isValidUrl {
             displayToast("Enter a valid sign up URL")
         }
-        else if instaUrl != DocumentDefaultValues.Empty.string && !instaUrl.isValidUrl{         displayToast(STATIC_LABELS.notValidInstaUrl.rawValue)
+        else if instaUrl != DocumentDefaultValues.Empty.string && !instaUrl.isValidUrl{
+            displayToast(STATIC_LABELS.notValidInstaUrl.rawValue)
         }
         else if fbUrl != DocumentDefaultValues.Empty.string && !fbUrl.isValidUrl{
             displayToast(STATIC_LABELS.notValidFbUrl.rawValue)

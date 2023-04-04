@@ -93,10 +93,8 @@ class EventDetailVC: UIViewController {
             guard let `self` = self else { return }
             if self.bookEventVM.success.value {
                 showAlert(STATIC_LABELS.eventBookPopUpHeading.rawValue, message: STATIC_LABELS.eventBookPopUpMsg.rawValue, btn: STATIC_LABELS.okBtn.rawValue) {
-                    if let url = URL(string: self.eventDetailVM.eventDetail.value.websiteURL) {
-                        UIApplication.shared.open(url)
-                    }
-                    self.navigationController?.popViewController(animated: true)
+                openUrlInSafari(strUrl: self.eventDetailVM.eventDetail.value.websiteURL)
+                self.navigationController?.popViewController(animated: true)
                 }
             }
         }
