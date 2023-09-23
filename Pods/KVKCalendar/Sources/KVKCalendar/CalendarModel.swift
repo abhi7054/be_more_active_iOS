@@ -108,7 +108,7 @@ public struct Event {
     /// unique identifier of Event
     public var ID: String
     
-    @available(swift, deprecated: 0.5.8, obsoleted: 0.5.9, renamed: "title")
+//    @available(swift, deprecated: 0.5.8, obsoleted: 0.5.9, renamed: "title")
     public var text: String = ""
     public var title: TextEvent = TextEvent()
     
@@ -128,12 +128,12 @@ public struct Event {
     public var isAllDay: Bool = false
     public var isContainsFile: Bool = false
     
-    @available(swift, deprecated: 0.5.8, obsoleted: 0.5.9, renamed: "title")
+//    @available(swift, deprecated: 0.5.8, obsoleted: 0.5.9, renamed: "title")
     public var textForMonth: String = ""
-    @available(swift, deprecated: 0.5.8, obsoleted: 0.5.9, renamed: "title")
+//    @available(swift, deprecated: 0.5.8, obsoleted: 0.5.9, renamed: "title")
     public var textForList: String = ""
     
-    @available(swift, deprecated: 0.4.6, obsoleted: 0.4.7, renamed: "data")
+//    @available(swift, deprecated: 0.4.6, obsoleted: 0.4.7, renamed: "data")
     public var eventData: Any? = nil
     public var data: Any? = nil
     
