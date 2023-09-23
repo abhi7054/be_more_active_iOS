@@ -223,6 +223,7 @@ extension UIImageView{
             let options: SDWebImageOptions = [.scaleDownLargeImages, .continueInBackground]
             let placeholder = UIImage(named: placeholder)
             DispatchQueue.global().async {
+                print(urlString)
                 self.sd_setImage(with: URL(string: urlString), placeholderImage: placeholder, options: options) { (image, _, cacheType,_ ) in
                     guard image != nil else {
                         return

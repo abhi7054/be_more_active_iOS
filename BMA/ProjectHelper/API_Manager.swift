@@ -134,6 +134,10 @@ public class APIManager {
         let headerParams: HTTPHeaders = HTTPHeaders.init(login == true ? self.getMultipartHeaderWithToken() : self.getJsonHeaderWithToken())
         var params :[String : Any] = [String : Any] ()
         
+        print("API URL ", api)
+        print("header ", headerParams)
+        print("param ", params)
+        
         params["data"] = toJson(param)//Converting Array into JSON Object
         log.info("PARAMS: \(Log.stats()) \(params)")/
         
@@ -234,6 +238,8 @@ public class APIManager {
                 DispatchQueue.main.async {
                     removeLoader()
                 }
+                
+                print("Response ", response.data?.prettyPrintedJSONString)
                 
                 switch response.result {
                 case .success(let dict):
