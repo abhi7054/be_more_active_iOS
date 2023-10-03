@@ -339,6 +339,7 @@ extension EventDetailVC : UICollectionViewDelegate, UICollectionViewDataSource, 
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: COLLECTION_VIEW_CELL.ImageCVC.rawValue, for: indexPath) as? ImageCVC else {
             return UICollectionViewCell()
         }
+        print(AppImageUrl.average + eventDetailVM.eventDetail.value.images[indexPath.row])
         cell.imgView.downloadCachedImage(placeholder: GLOBAL_IMAGES.eventPlaceHolder.rawValue, urlString: AppImageUrl.average + eventDetailVM.eventDetail.value.images[indexPath.row])
         return cell
     }
