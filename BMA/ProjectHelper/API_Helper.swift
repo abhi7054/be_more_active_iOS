@@ -34,7 +34,7 @@ struct API {
 //    static let BASE_URL = "http://18.217.123.31:3000/api/"
     
     //Production
-    static let BASE_URL = "http://18.190.105.31:3000/api/"
+    static let BASE_URL = "https://18.190.105.31:3000/api/"
     
     
     struct USER {
